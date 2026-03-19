@@ -26,7 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 800);
 
         } catch (error) {
-            showFeedback(`Error: ${error.message}`, 'error');
+            const lang = localStorage.getItem('language') || 'es';
+            const errorMsg = translations[lang][error.message] || error.message;
+            showFeedback(`Error: ${errorMsg}`, 'error');
         }
     };
 
@@ -76,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Alerts
         renderAlertList('low-stock-list', res.criticalAlerts.lowStock, 'badge-warning');
         renderAlertList('out-of-stock-list', res.criticalAlerts.outOfStock, 'badge-danger');
-        renderAlertList('excess-stock-list', [...res.criticalAlerts.excessStock, ...res.criticalAlerts.deadStock], 'badge-warning');
+        renderAlertList('excess-stock-list', [...new Set([...res.criticalAlerts.excessStock, ...res.criticalAlerts.deadStock])], 'badge-warning');
 
         // 3. Turnover
         renderTurnoverChart(res.turnoverAnalytics);
@@ -106,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         probList.innerHTML = res.problematicProducts.slice(0, 3).map(p => `
             <div class="alert-item">
                 <span>${p.name}</span>
-                <span class="badge badge-danger">${p.reason}</span>
+                <span class="badge badge-danger">${translations[lang][p.reason] || p.reason}</span>
             </div>
         `).join('') || `<p style="color:var(--text-dim);">${translations[lang].noProblems}</p>`;
 
@@ -114,19 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const replenishmentTable = document.getElementById('replenishment-body');
         replenishmentTable.innerHTML = res.replenishmentPredictions.map(p => {
             let badgeClass = 'badge-success';
-            let actionText = p.action;
-            if (p.action === 'Solicitar YA') {
+            let actionText = translations[lang][p.action] || p.action;
+            if (p.action === 'orderNow') {
                 badgeClass = 'badge-danger';
-                actionText = lang === 'en' ? 'Order NOW' : 'Solicitar YA';
-            } else if (p.action === 'Planificar') {
+            } else if (p.action === 'plan') {
                 badgeClass = 'badge-warning';
-                actionText = lang === 'en' ? 'Plan' : 'Planificar';
             }
 
             return `
                 <tr>
                     <td>${p.name}</td>
-                    <td>${p.daysRemaining === Infinity ? '∞' : p.daysRemaining} ${lang === 'en' ? 'days' : 'dias'}</td>
+                    <td>${p.daysRemaining === Infinity ? '∞' : p.daysRemaining} ${translations[lang].days}</td>
                     <td>${Math.round(p.suggestedOrder)} un.</td>
                     <td><span class="badge ${badgeClass}">${actionText}</span></td>
                 </tr>
@@ -165,13 +165,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderAlertList = (id, list, badgeClass) => {
+        const lang = localStorage.getItem('language') || 'es';
         const el = document.getElementById(id);
         el.innerHTML = list.slice(0, 5).map(name => `
             <li class="alert-item">
                 <span>${name}</span>
-                <span class="badge ${badgeClass}">Crítico</span>
+                <span class="badge ${badgeClass}">${translations[lang].critical}</span>
             </li>
-        `).join('') || '<li class="alert-item" style="color:var(--text-dim);">Sin alertas</li>';
+        `).join('') || `<li class="alert-item" style="color:var(--text-dim);">${translations[lang].noAlerts}</li>`;
     };
 
     const showDashboard = () => {

@@ -29,7 +29,7 @@ function parseCSV(file) {
                     const hasAllRequired = requiredColumns.every(col => col in firstRow);
 
                     if (!hasAllRequired) {
-                        reject(new Error(`El CSV debe contener al menos las columnas: 'producto', 'fecha' y 'cantidad'.`));
+                        reject(new Error("csvError"));
                     } else {
                         // Normalize data and provide defaults for missing advanced columns
                         const normalizedData = results.data.map(row => {

@@ -127,7 +127,7 @@ function identifyProblematicProducts(products) {
         const margin = p.precio - p.costo;
         const avgDemand = calculateAvgDemand(p.sales);
         return (margin <= 0) || (avgDemand < 0.1 && p.stockActual > 50);
-    }).map(p => ({ name: p.name, reason: p.precio <= p.costo ? "Bajo Margen" : "Lento Movimiento" }));
+    }).map(p => ({ name: p.name, reason: p.precio <= p.costo ? "lowMarginReason" : "slowMovementReason" }));
 }
 
 function identifyStarProducts(products) {
@@ -146,7 +146,7 @@ function generateReplenishmentPredictions(products) {
             name: p.name,
             daysRemaining,
             suggestedOrder: avgDemand * 30, // Order for next 30 days
-            action: daysRemaining < 10 ? "Solicitar YA" : (daysRemaining < 20 ? "Planificar" : "OK")
+            action: daysRemaining < 10 ? "orderNow" : (daysRemaining < 20 ? "plan" : "ok")
         };
     }).filter(p => p.daysRemaining < 30);
 }
@@ -203,7 +203,7 @@ function generateInsights(products, data) {
         insights.push({
             key: 'insightFrozenCapital',
             data: { amount: val.frozenCapital },
-            products: [...alerts.excessStock, ...alerts.deadStock]
+            products: [...new Set([...alerts.excessStock, ...alerts.deadStock])]
         });
     }
 
@@ -215,7 +215,7 @@ function generateInsights(products, data) {
         });
     }
 
-    const lowMarginProducts = identifyProblematicProducts(products).filter(p => p.reason === "Bajo Margen");
+    const lowMarginProducts = identifyProblematicProducts(products).filter(p => p.reason === "lowMarginReason");
     if (lowMarginProducts.length > 0) {
         insights.push({
             key: 'insightLowMargin',
