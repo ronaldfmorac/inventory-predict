@@ -57,8 +57,6 @@ A lightweight, high-performance inventory forecasting engine built from the grou
 **Ronald Mora**  
 *Software Developer specialized in clean architecture and performant web solutions.*
 
-- [LinkedIn](https://linkedin.com/in/yourprofile) <!-- Replace with your actual profile link -->
+- [LinkedIn](https://www.linkedin.com/in/ronald-mora-09458263/)
 - [Portfolio](https://github.com/ronaldfmorac)
 
----
-*Note: This project showcases a commitment to building efficient, privacy-conscious digital tools without unnecessary library dependencies.*
