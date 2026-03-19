@@ -1,0 +1,43 @@
+# OS & Environment
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+vendor/
+.pnp
+.pnp.js
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
+
+# PHP Specific
+.phpunit.result.cache
+.php-cs-fixer.cache
+phpdocs/
+tests/_output/
+tests/_support/_generated/
+
+# Logs & Debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# XAMPP & Local Server
+error_log
+access_log
+.htaccess_local

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Inteligente | ROI Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 data-lang-key="appTitle">ROI Inventory Intelligence</h1>
+            <nav class="controls-container">
+                <div class="lang-switch">
+                    <select id="lang-switcher">
+                        <option value="es">Español</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <button id="reset-button" class="analyze-btn" style="padding: 0.5rem 1rem; display: none;" data-lang-key="resetButton">Nuevo Análisis</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section id="upload-section">
+                <h2 data-lang-key="uploadHeader" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Inteligencia de Inventario</h2>
+                <p data-lang-key="uploadSubheader" style="color: var(--text-dim); margin-bottom: 2rem;">Optimiza tu capital y predice tu demanda con IA local.</p>
+                
+                <div id="drop-zone" class="drop-zone">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; color: var(--primary);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <h3 data-lang-key="uploadPrompt">Sube tu CSV de inventario para comenzar</h3>
+                    <p data-lang-key="csvFormatNote" style="font-size: 0.8rem; margin: 1rem 0;">Requerido: producto, fecha, cantidad. Recomendado: categoria, stock_actual, stock_comprometido, costo, precio.</p>
+                    <input type="file" id="file-input" accept=".csv" hidden>
+                    <label for="file-input" class="analyze-btn" data-lang-key="browseFiles" style="display: inline-block;">Buscar Archivo</label>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <a href="examples/ejemplo.csv" download class="insight-text" style="text-decoration: none; display: inline-flex; align-items: center; color: var(--primary); font-size: 0.85rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span data-lang-key="downloadExample">Descargar CSV de Ejemplo</span>
+                        </a>
+                    </div>
+                </div>
+                <div id="upload-feedback" class="feedback-message" style="display: none; margin-top: 1rem;"></div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" style="display: none;">
+                <div class="dashboard-grid">
+                    
+                    <!-- 10. Insights Automáticos (TOP) -->
+                    <div class="section-title" data-lang-key="insightsTitle">Insights Automáticos</div>
+                    <div id="insights-container" class="card insight-card full-width" style="grid-column: 1 / -1;">
+                        <!-- JS populated -->
+                    </div>
+
+                    <!-- 1. Estado Actual -->
+                    <div class="section-title" data-lang-key="statusTitle">Estado del Inventario</div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="totalStock">Stock Total</span>
+                        <span id="total-stock" class="metric-value">--</span>
+                    </div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="inventoryValue">Valor Inventario</span>
+                        <span id="total-value" class="metric-value">--</span>
+                    </div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="availableStock">Stock Disponible</span>
+                        <span id="available-stock" class="metric-value">--</span>
+                        <span class="metric-label" style="font-size: 0.7rem;"><span id="committed-stock">--</span> <span data-lang-key="committedStock">Comprometido</span></span>
+                    </div>
+
+                    <!-- 2. Alertas Críticas -->
+                    <div class="section-title" data-lang-key="alertsTitle">Alertas Críticas</div>
+                    <div class="card">
+                        <h4 data-lang-key="lowStock" style="color: var(--warning);">Stock Bajo</h4>
+                        <ul id="low-stock-list" class="alerts-list"></ul>
+                    </div>
+                    <div class="card">
+                        <h4 data-lang-key="outOfStock" style="color: var(--danger);">Agotados</h4>
+                        <ul id="out-of-stock-list" class="alerts-list"></ul>
+                    </div>
+                    <div class="card">
+                        <h4 data-lang-key="excessStock" style="color: var(--primary);">Exceso/Muerto</h4>
+                        <ul id="excess-stock-list" class="alerts-list"></ul>
+                    </div>
+
+                    <!-- 3. Rotación -->
+                    <div class="section-title" data-lang-key="turnoverTitle">Rotación de Inventario</div>
+                    <div class="card chart-card" style="grid-column: span 2;">
+                         <div class="chart-container">
+                            <canvas id="turnover-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                         <div class="table-container">
+                            <table id="turnover-table">
+                                <thead>
+                                    <tr>
+                                        <th data-lang-key="product">Producto</th>
+                                        <th data-lang-key="turnoverRatio">Indice</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="turnover-body"></tbody>
+                            </table>
+                         </div>
+                    </div>
+
+                    <!-- 4. Valor por Categoría -->
+                    <div class="section-title" data-lang-key="valCategoryTitle">Valor por Categoría</div>
+                    <div class="card chart-card" style="grid-column: span 2;">
+                        <div class="chart-container">
+                            <canvas id="category-value-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="frozenCapital">Capital Inmovilizado</span>
+                        <span id="frozen-capital" class="metric-value" style="color: var(--danger);">--</span>
+                    </div>
+
+                    <!-- 5 & 6. Productos Estrella y Problemáticos -->
+                    <div class="section-title" data-lang-key="performanceTitle">Rendimiento de Productos</div>
+                    <div class="card">
+                        <h3 data-lang-key="starProductsTitle">Productos Estrella</h3>
+                        <div id="star-products-list"></div>
+                    </div>
+                    <div class="card">
+                        <h3 data-lang-key="problematicTitle">Productos Problemáticos</h3>
+                        <div id="problematic-products-list"></div>
+                    </div>
+
+                    <!-- 7. Predicción de Reposición -->
+                    <div class="section-title" data-lang-key="replenishmentTitle">Predicción de Reposición</div>
+                    <div class="card full-width" style="grid-column: 1 / -1;">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th data-lang-key="product">Producto</th>
+                                        <th data-lang-key="stockLeft">Días Restantes</th>
+                                        <th data-lang-key="suggestedOrder">Pedido Sugerido</th>
+                                        <th data-lang-key="action">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="replenishment-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 8. Análisis Temporal -->
+                    <div class="section-title" data-lang-key="demandAnalysisTitle">Análisis de la Demanda</div>
+                    <div class="card full-width" style="grid-column: 1 / -1;">
+                        <div class="chart-container">
+                            <canvas id="time-analysis-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 9. Eficiencia -->
+                    <div class="section-title" data-lang-key="efficiencyTitle">Control de Eficiencia</div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="stockoutRate">Tasa de Quiebre</span>
+                        <span id="stockout-rate" class="metric-value">--</span>
+                        <span class="metric-label" data-lang-key="stockoutRateDesc" style="font-size: 0.7rem; color: var(--text-dim);">--</span>
+                    </div>
+                    <div class="card metric-card">
+                        <span class="metric-label" data-lang-key="serviceLevel">Nivel de Servicio</span>
+                        <span id="service-level" class="metric-value">--</span>
+                        <span class="metric-label" data-lang-key="serviceLevelDesc" style="font-size: 0.7rem; color: var(--text-dim);">--</span>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <footer style="margin-top: 5rem; text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+            <p data-lang-key="footerText">ROI Inventory Intelligence &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="js/localization.js"></script>
+    <script src="js/parser.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
